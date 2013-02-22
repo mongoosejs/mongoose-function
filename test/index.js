@@ -131,54 +131,89 @@ describe('MongooseFunction', function(){
       })
     })
 
-    it('can be saved', function(done){
-      function Ab_eiot43$() { return 20 }
 
-      function
-       multiline
-        () {
+    describe('with db', function(){
+      it('save', function(done){
+        function Ab_eiot43$() { return 20 }
 
-          return 100;
-      }
+        function
+         multiline
+          () {
 
-      var s = new S({
-          fn: 'return 10'
-        , docs: [
-              { fn: Ab_eiot43$ }
-            , { fn: function      stuff     (      ) {return 1 } }
-            , { fn: multiline }
-          ]
-      });
-      id = s.id;
-      s.save(function (err) {
-        assert.ifError(err);
-        done();
-      })
-    })
+            return 100;
+        }
 
-    it('is queryable', function(done){
-      S.findById(id, function (err, doc) {
-        assert.ifError(err);
-        assert.ok('function' == typeof doc.fn);
-        assert.equal(
-            131
-          , doc.fn() + doc.docs[0].fn() + doc.docs[1].fn() + doc.docs[2].fn()
-        );
-        done();
-      });
-    })
-
-    it('can be updated', function(done){
-      S.findById(id, function (err, doc) {
-        assert.ifError(err);
-        doc.fn = function(){ return require('mongoose').version }
-        doc.save(function (err) {
+        var s = new S({
+            fn: 'return 10'
+          , docs: [
+                { fn: Ab_eiot43$ }
+              , { fn: function      stuff     (      ) {return 1 } }
+              , { fn: multiline }
+            ]
+        });
+        id = s.id;
+        s.save(function (err) {
           assert.ifError(err);
+          done();
+        })
+      })
+
+      var fnStr;
+      it('findById', function(done){
+        S.findById(id, function (err, doc) {
+          assert.ifError(err);
+          assert.ok('function' == typeof doc.fn);
+          assert.equal(
+              131
+            , doc.fn() + doc.docs[0].fn() + doc.docs[1].fn() + doc.docs[2].fn()
+          );
+          fnStr = doc.fn.toString();
+          done();
+        });
+      })
+
+      it('find', function(done){
+        S.find({ fn: fnStr }, function (err, docs) {
+          assert.ifError(err);
+          assert.equal(1, docs.length);
+          var doc = docs[0];
+          assert.ok('function' == typeof doc.fn);
+          assert.equal(
+              131
+            , doc.fn() + doc.docs[0].fn() + doc.docs[1].fn() + doc.docs[2].fn()
+          );
+          done();
+        });
+      })
+
+      it('find with RegExp', function(done){
+        S.find({ fn: /return 10/, 'docs.fn': new RegExp('^function', 'i') }, function (err, docs) {
+          assert.ifError(err);
+          assert.equal(1, docs.length);
+          var doc = docs[0];
+          assert.ok('function' == typeof doc.fn);
+          assert.equal(
+              131
+            , doc.fn() + doc.docs[0].fn() + doc.docs[1].fn() + doc.docs[2].fn()
+          );
+          done();
+        });
+      })
+
+      describe('is updateable', function(){
+        it('in general', function(done){
           S.findById(id, function (err, doc) {
             assert.ifError(err);
-            assert.equal('3.5.6', doc.fn());
-            done();
-          });
+            doc.fn = function(){ return require('mongoose').version }
+            doc.save(function (err) {
+              assert.ifError(err);
+              S.findById(id, function (err, doc) {
+                assert.ifError(err);
+                assert.equal('3.5.6', doc.fn());
+                done();
+              });
+            })
+          })
         })
       })
     })
