@@ -1,7 +1,7 @@
 #mongoose-function
 ===================
 
-Provides [Mongoose](http://mongoosejs.com) support for storing functions and associated scope data.
+Provides [Mongoose](http://mongoosejs.com) support for storing functions.
 
 [![Build Status](https://secure.travis-ci.org/aheckmann/mongoose-function.png)](http://travis-ci.org/aheckmann/mongoose-function)
 
