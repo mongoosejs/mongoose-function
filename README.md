@@ -11,8 +11,7 @@ Example:
 var mongoose = require('mongoose')
 require('mongoose-function')(mongoose);
 
-var SchemaTypes = mongoose.Schema.Types;
-var mySchema = Schema({ func: SchemaTypes.Function });
+var mySchema = Schema({ func: Function });
 var M = mongoose.model('Functions', mySchema);
 
 var m = new M;
@@ -21,7 +20,7 @@ m.func = function(){
 }
 m.save(function (err) {
   M.findById(m._id, function (err, doc) {
-    doc.func(); // stored function
+    doc.func(); // logs "stored function"
   });
 });
 ```
