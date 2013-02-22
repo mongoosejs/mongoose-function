@@ -27,6 +27,14 @@ m.save(function (err) {
 
 Storing function scope isn't supported. Just store it in a separate document property.
 
+#### MongooseFunction Differences
+
+The only difference between a `MongooseFunction` and a native function is `MongooseFunction.valueOf()` returns a string instead of the function itself. This is for compatibility with Mongoose.
+
+#### BSON Code
+
+`MongooseFunction` does not store functions using the `Code` BSON type. The reason for this is that `Code` does not allow for searching by `RegExp`. As such, storing function scope is not directly supported, instead, store the scope in another document property.
+
 ### install
 
 ```
