@@ -3,7 +3,7 @@
 
 Provides [Mongoose](http://mongoosejs.com) support for storing functions.
 
-[![Build Status](https://secure.travis-ci.org/aheckmann/mongoose-function.png)](http://travis-ci.org/aheckmann/mongoose-function)
+[![Build Status](https://travis-ci.org/aheckmann/mongoose-function.png?branch=master)](http://travis-ci.org/aheckmann/mongoose-function)
 
 Example:
 
