@@ -129,8 +129,23 @@ describe('MongooseFunction', function(){
           })
         })
       })
-    })
 
+      it('Code', function(done){
+        var v = function () { return 3 + 9; }
+        var scope = { x: 1 };
+        var code = new mongoose.mongo.Code(v, scope);
+        var s = new S({ fn: code });
+        s.save(function (err) {
+          assert.ok(/MongooseFunction does not support storing Code `scope`/, err);
+
+          v = function () { return 3 + 9; }
+          s.fn = new mongoose.mongo.Code(v);
+          assert.equal('function', typeof s.fn);
+          assert.equal(12, s.fn());
+          done();
+        })
+      })
+    })
 
     describe('with db', function(){
       it('save', function(done){
@@ -216,6 +231,22 @@ describe('MongooseFunction', function(){
           })
         })
       })
+
+      describe('with mongodb.Code', function(){
+        it('works', function(done){
+          var v = function () { return 3 + 9; }
+          var code = new mongoose.mongo.Code(v);
+          var s = new S({ fn: code });
+          s.save(function (err) {
+            assert.ifError(err);
+            S.findById(s._id, function (err, doc) {
+              assert.ifError(err);
+              assert.equal(12, doc.fn());
+              done();
+            })
+          })
+        })
+      })
     })
 
     it('can be required', function(done){
@@ -231,5 +262,6 @@ describe('MongooseFunction', function(){
         })
       })
     })
+
   })
 })
