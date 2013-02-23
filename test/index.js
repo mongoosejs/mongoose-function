@@ -83,16 +83,20 @@ describe('MongooseFunction', function(){
 
       describe('strings', function(){
         it('with length', function(){
-          var v = 'return "Mario64"';
+          var v = 'function \n\r woot (){ return "Mario64" }';
           var s = new S({ fn: v });
           assert.equal('function', typeof s.fn);
           assert.equal('Mario64', s.fn());
         })
+        it('with length that do not start with "function"', function(){
+          var v = 'return "Mario64"';
+          var s = new S({ fn: v });
+          assert.equal('undefined', typeof s.fn);
+        })
         it('that are empty', function(){
           var v = '';
           var s = new S({ fn: v });
-          assert.equal('function', typeof s.fn);
-          assert.equal(undefined, s.fn());
+          assert.strictEqual(null, s.fn);
         })
       });
 
@@ -102,7 +106,7 @@ describe('MongooseFunction', function(){
       })
 
       it('MongooseFunction', function(){
-        var s = new S({ fn: new mongoose.Types.Function("return 90") });
+        var s = new S({ fn: new mongoose.Types.Function("function(){return 90}") });
         assert.equal('function', typeof s.fn);
         assert.equal(90, s.fn());
       })
@@ -120,7 +124,7 @@ describe('MongooseFunction', function(){
       })
 
       it('queries with null properly', function(done){
-        S.create({ fn: null }, { fn: 'return 1' }, function (err) {
+        S.create({ fn: null }, { fn: ' function (){  return 1 } ' }, function (err) {
           assert.ifError(err);
           S.findOne({ fn: null }, function (err, doc) {
             assert.ifError(err);
@@ -159,7 +163,7 @@ describe('MongooseFunction', function(){
         }
 
         var s = new S({
-            fn: 'return 10'
+            fn: 'function  \n\rn (a, b, c )  {return 10; 3}'
           , docs: [
                 { fn: Ab_eiot43$ }
               , { fn: function      stuff     (      ) {return 1 } }
@@ -224,7 +228,7 @@ describe('MongooseFunction', function(){
               assert.ifError(err);
               S.findById(id, function (err, doc) {
                 assert.ifError(err);
-                assert.equal('3.5.6', doc.fn());
+                assert.equal(mongoose.version, doc.fn());
                 done();
               });
             })
@@ -263,5 +267,37 @@ describe('MongooseFunction', function(){
       })
     })
 
+    describe('security', function(){
+      it('handles values returned from db', function(done){
+        S.create({ docs: [] }, function (err, doc) {
+          assert.ifError(err);
+
+          var docs = [];
+          docs[0] = { fn: ' ' }
+          docs[1] = { fn: ' function  \n ok (a) \r\n  { return { a: a\n\r }\n}}}' }
+          docs[2] = { fn: 'function c(){ process.stdout.write("gotcha") }' }
+          docs[3] = { fn: 'eval(5)' }
+
+          S.collection.update(
+              { _id: doc._id }
+            , { $set: { docs: docs }}
+            , { w: 1 }, function (err) {
+            assert.ifError(err);
+
+            S.findById(doc._id, function (err, doc) {
+              assert.ifError(err);
+              assert.equal(null, doc.docs[0].fn);
+              assert.equal(4, doc.docs[1].fn(4).a);
+              assert.equal(undefined, doc.docs[2].fn());
+              assert.equal(undefined, doc.docs[3].fn);
+              done()
+            })
+          })
+        })
+      })
+
+
+    })
   })
+
 })
