@@ -296,7 +296,65 @@ describe('MongooseFunction', function(){
         })
       })
 
+      describe('custom toFunction', function(){
+        it('can be set by user', function(done){
+          delete mongoose.Types.Function;
+          delete mongoose.Schema.Types.Function;
 
+          var custom = false;
+
+          function toFunction (str) {
+            custom = true;
+            return eval('(' + str + ')');
+          }
+
+          Mod(mongoose, { toFunction: toFunction })
+
+          var schema = new Schema({
+              fn: FunctionSchema
+          });
+          var M = db.model('MFunction2', schema);
+
+          var m= new M({ fn: 'function () { return 10 + 10 }' })
+          assert.equal(20, m.fn());
+          assert.ok(custom);
+
+          m = new M({ fn: 'return 10 + 10' });
+          assert.equal('undefined', typeof m.fn);
+          m.save(function (err) {
+            assert.ok(err);
+
+            m.fn = 'function () { return "worked" }'
+            assert.equal('worked', m.fn());
+
+            m.save(function (err) {
+              assert.ifError(err);
+              M.findById(m._id, function (err, doc) {
+                assert.ifError(err);
+                assert.equal('worked', doc.fn());
+                done()
+              })
+            })
+          })
+        })
+        it('must return functions or null', function(done){
+          var M = db.model('MFunction2');
+
+          var m= new M({ fn: '{ toString: "fail" }' })
+          assert.equal('undefined', typeof m.fn);
+          var m= new M({ fn: '[]' })
+          assert.equal('undefined', typeof m.fn);
+          var m= new M({ fn: 'return "hm"' })
+          assert.equal('undefined', typeof m.fn);
+          var m= new M({ fn: '10' })
+          assert.equal('undefined', typeof m.fn);
+          var m= new M({ fn: 'new RegExp(".*")' })
+          assert.equal('undefined', typeof m.fn);
+          var m= new M({ fn: new mongoose.mongo.Code('null') })
+          assert.strictEqual(null, m.fn);
+          done();
+        })
+      })
     })
   })
 
