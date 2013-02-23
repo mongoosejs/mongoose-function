@@ -1,6 +1,6 @@
 {
   "name": "mongoose-function",
-  "version": "0.0.3-pre",
+  "version": "0.1.0",
   "description": "Function storage for Mongoose",
   "main": "index.js",
   "scripts": {

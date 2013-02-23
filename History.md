@@ -1,4 +1,11 @@
 
+0.1.0 / 2013-02-23
+==================
+
+  * expose toFunction
+  * allow user defined fn conversions
+  * lock down whats considered a valid function string
+
 0.0.2 / 2013-02-22
 ==================
 
