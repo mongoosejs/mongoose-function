@@ -324,16 +324,22 @@ describe('MongooseFunction', function(){
           m.save(function (err) {
             assert.ok(err);
 
-            m.fn = 'function () { return "worked" }'
-            assert.equal('worked', m.fn());
+            // sidestep issue in mongoose < 3.5.8 by using nextTick
+            process.nextTick(function(){
 
-            m.save(function (err) {
-              assert.ifError(err);
-              M.findById(m._id, function (err, doc) {
+              m.fn = 'function () { return "worked" }'
+              assert.equal('worked', m.fn());
+
+              m.save(function (err) {
                 assert.ifError(err);
-                assert.equal('worked', doc.fn());
-                done()
+                M.findById(m._id, function (err, doc) {
+                  console.log(4);
+                  assert.ifError(err);
+                  assert.equal('worked', doc.fn());
+                  done()
+                })
               })
+
             })
           })
         })
